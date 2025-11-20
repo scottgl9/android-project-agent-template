@@ -34,13 +34,14 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
-# Function to detect JDK 17 installation path
+# Function to detect JDK 21 installation path
 detect_java_home() {
     local candidates=(
-        "/usr/lib/jvm/java-17-openjdk-amd64"
-        "/usr/lib/jvm/java-17-openjdk"
-        "/usr/lib/jvm/jdk-17"
-        "/usr/lib/jvm/jdk-17.0"
+        "/usr/lib/jvm/java-1.21.0-openjdk-amd64"
+        "/usr/lib/jvm/java-21-openjdk-amd64"
+        "/usr/lib/jvm/java-21-openjdk"
+        "/usr/lib/jvm/jdk-21"
+        "/usr/lib/jvm/jdk-21.0"
     )
 
     for path in "${candidates[@]}"; do
@@ -94,31 +95,31 @@ detect_distro() {
 
 # Function to install Java
 install_java() {
-    log_info "Installing Java Development Kit (JDK 17)..."
-    
+    log_info "Installing Java Development Kit (JDK 21)..."
+
     local distro
     distro=$(detect_distro)
     case $distro in
         ubuntu|debian)
             sudo apt update
-            sudo apt install -y openjdk-17-jdk
+            sudo apt install -y openjdk-21-jdk
             ;;
         fedora)
-            sudo dnf install -y java-17-openjdk-devel
+            sudo dnf install -y java-21-openjdk-devel
             ;;
         centos|rhel)
-            sudo yum install -y java-17-openjdk-devel
+            sudo yum install -y java-21-openjdk-devel
             ;;
         arch)
-            sudo pacman -S --noconfirm jdk17-openjdk
+            sudo pacman -S --noconfirm jdk21-openjdk
             ;;
         *)
             log_error "Unsupported distribution: $distro"
-            log_info "Please install OpenJDK 17 manually"
+            log_info "Please install OpenJDK 21 manually"
             exit 1
             ;;
     esac
-    
+
     # Verify Java installation
     if command_exists java && command_exists javac; then
         log_success "Java installed successfully"
@@ -128,20 +129,20 @@ install_java() {
         exit 1
     fi
 
-    # Set JAVA_HOME to the standard JDK 17 path
-    local java_home="/usr/lib/jvm/java-17-openjdk-amd64"
-    
+    # Set JAVA_HOME to the standard JDK 21 path
+    local java_home="/usr/lib/jvm/java-1.21.0-openjdk-amd64"
+
     # Check if the standard path exists, otherwise try to detect it
     if [[ ! -d "$java_home" ]]; then
-        log_warning "Standard JDK 17 path not found, attempting to detect..."
+        log_warning "Standard JDK 21 path not found, attempting to detect..."
         java_home=$(detect_java_home)
     fi
-    
+
     if [[ -n "$java_home" && -d "$java_home" ]]; then
         export JAVA_HOME="$java_home"
         log_success "Set JAVA_HOME to $JAVA_HOME"
     else
-        log_error "Unable to determine JAVA_HOME. Please verify JDK 17 installation."
+        log_error "Unable to determine JAVA_HOME. Please verify JDK 21 installation."
         exit 1
     fi
 }
@@ -149,8 +150,8 @@ install_java() {
 # Function to install Gradle
 install_gradle() {
     log_info "Installing Gradle build tool..."
-    
-    local gradle_version="8.5"  # Latest stable version as of Sept 2025
+
+    local gradle_version="8.10.2"  # Stable version matching gradle-wrapper.properties
     local gradle_dir="$HOME/.gradle-install"
     local gradle_url="https://services.gradle.org/distributions/gradle-${gradle_version}-bin.zip"
     local gradle_zip="$gradle_dir/gradle-${gradle_version}-bin.zip"
@@ -252,12 +253,12 @@ install_sdk_components() {
     
     # Install essential components
     log_info "Installing platform-tools, build-tools, and platforms..."
-    echo "y" | sdkmanager "platform-tools" "build-tools;34.0.0" "platforms;android-34" "platforms;android-33"
-    
+    echo "y" | sdkmanager "platform-tools" "build-tools;35.0.0" "build-tools;34.0.0" "platforms;android-35" "platforms;android-34"
+
     # Install emulator
     log_info "Installing Android emulator..."
     echo "y" | sdkmanager "emulator"
-    
+
     # Install system image for testing
     log_info "Installing system image for emulator..."
     echo "y" | sdkmanager "system-images;android-34;google_apis;x86_64"
@@ -268,10 +269,10 @@ install_sdk_components() {
 # Function to configure environment variables
 configure_environment() {
     log_info "Configuring environment variables..."
-    
-    # Use the standard JDK 17 path or fallback to detected path
-    local java_home="/usr/lib/jvm/java-17-openjdk-amd64"
-    
+
+    # Use the standard JDK 21 path or fallback to detected path
+    local java_home="/usr/lib/jvm/java-1.21.0-openjdk-amd64"
+
     if [[ ! -d "$java_home" ]]; then
         java_home=${JAVA_HOME:-$(detect_java_home)}
     fi
@@ -280,13 +281,13 @@ configure_environment() {
         export JAVA_HOME="$java_home"
         log_success "Configuring JAVA_HOME=$JAVA_HOME"
     else
-        log_error "JAVA_HOME could not be determined. Please verify JDK 17 installation."
+        log_error "JAVA_HOME could not be determined. Please verify JDK 21 installation."
         exit 1
     fi
 
     local env_block="
 # Android SDK and Java environment variables - Added by android-project-agent-template
-export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+export JAVA_HOME=/usr/lib/jvm/java-1.21.0-openjdk-amd64
 export ANDROID_HOME=\$HOME/Android/Sdk
 export ANDROID_SDK_ROOT=\$HOME/Android/Sdk
 export GRADLE_HOME=\$HOME/.gradle-install/current
@@ -402,17 +403,17 @@ OPTIONS:
     -h, --help      Show this help message
     -v, --verify    Only verify existing installation
     -f, --force     Force reinstallation even if components exist
-    
+
 EXAMPLES:
     $0              # Install complete Android environment
     $0 --verify     # Verify existing installation
     $0 --force      # Force complete reinstallation
 
 This script will:
-1. Install Java Development Kit (OpenJDK 17) with JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-2. Install Gradle build tool
+1. Install Java Development Kit (OpenJDK 21) with JAVA_HOME=/usr/lib/jvm/java-1.21.0-openjdk-amd64
+2. Install Gradle 8.10.2 build tool
 3. Download and setup Android Command Line Tools
-4. Install Android SDK components (platform-tools, build-tools, platforms)
+4. Install Android SDK components (platform-tools, build-tools 35, platforms android-35)
 5. Configure environment variables in ~/.bashrc and ~/.profile
 6. Create a test Android Virtual Device
 7. Verify the complete installation

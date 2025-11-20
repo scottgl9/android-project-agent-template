@@ -67,6 +67,12 @@ Follow this cycle for each task:
 - [ ] Use Kotlin unless specified otherwise
 - [ ] Follow MVVM or MVI architecture patterns
 - [ ] Implement dependency injection where appropriate
+- [ ] **IMPORTANT: Add all new user-facing strings to `app/src/main/res/values/strings.xml` for translation support**
+  - UI strings (button labels, titles, error messages) → `strings.xml`
+  - Domain logic strings (LLM prompts, internal errors, logs) → Keep in code
+  - Use `stringResource(R.string.your_string_id)` in Composables
+  - Use `context.getString(R.string.your_string_id)` in Activities/Fragments
+  - Never hardcode user-facing text in Kotlin code
 
 #### Testing Requirements
 - [ ] Create unit tests for all business logic
