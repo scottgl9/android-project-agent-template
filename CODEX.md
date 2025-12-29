@@ -5,13 +5,24 @@
 > If you are another AI agent, use `AGENTS.md`.
 
 ## Introduction
-This guide is specifically designed for GitHub Copilot / Codex to autonomously develop Android applications from a Product Requirements Document (PRD). Follow these instructions systematically to build high-quality Android apps.
+This guide is specifically designed for GitHub Copilot / Codex to autonomously develop Android and iOS applications from a Product Requirements Document (PRD). Follow these instructions systematically to build high-quality mobile apps.
 
 **Do not refer to other guide documents.** All necessary information for Codex/Copilot is contained in this file.
+
+## Platform Support
+
+| Development Host | Android | iOS |
+|-----------------|---------|-----|
+| macOS (Intel/ARM) | ✅ Full support | ✅ Full support |
+| Linux (x86_64/ARM64) | ✅ Full support | ❌ Not supported |
+
+> **Note**: iOS development requires macOS due to Xcode requirements. See `PLATFORM_GUIDE.md` for details.
 
 ## Quick Start
 
 ### Initial Setup Sequence
+
+#### Android (macOS or Linux):
 ```bash
 # 1. Validate environment
 ./scripts/validate-android-environment.sh
@@ -25,6 +36,21 @@ adb devices
 # 4. If real device connected and authorized, you're ready!
 # 5. If no device and testing needed, optionally start emulator:
 #    ./scripts/run_emulator.sh
+```
+
+#### iOS (macOS Only):
+```bash
+# 1. Validate environment
+./scripts/validate-ios-environment.sh
+
+# 2. Install if needed
+./scripts/install-ios-environment.sh
+
+# 3. Check for available simulators
+xcrun simctl list devices available
+
+# 4. Run on simulator
+./scripts/run_simulator.sh MyAppScheme
 ```
 
 ### Project Initialization
@@ -677,7 +703,8 @@ Before marking task complete:
 
 ## Getting Started Now
 
-1. Run environment validation
+### For Android Development:
+1. Run environment validation: `./scripts/validate-android-environment.sh`
 2. Check for connected devices: `adb devices`
 3. Authorize device if needed
 4. Read PRD.md
@@ -689,4 +716,19 @@ Before marking task complete:
 10. Take next TODO item
 11. Repeat
 
-**Let's build something great! 🚀**
+### For iOS Development (macOS Only):
+1. Run environment validation: `./scripts/validate-ios-environment.sh`
+2. Check Xcode is installed and configured
+3. Check for simulators: `xcrun simctl list devices`
+4. Read PRD.md
+5. Create TODO.md with all tasks
+6. Initialize PROGRESS.md and BUGS.md
+7. Take first TODO item from top
+8. Implement → Test on Simulator → Document → Commit → Push
+9. Remove from TODO, add to PROGRESS
+10. Take next TODO item
+11. Repeat
+
+For detailed cross-platform guidance, see `PLATFORM_GUIDE.md`.
+
+**Let's build something great!**

@@ -2,6 +2,7 @@
 
 # Android Environment Validation Script for Agents
 # This script provides a quick validation of the Android development environment
+# Supports both macOS and Linux platforms
 # Returns exit code 0 if environment is ready, 1 if there are issues
 
 # Colors for output
@@ -33,14 +34,33 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
+# Function to detect OS
+detect_os() {
+    local os
+    os=$(uname -s | tr '[:upper:]' '[:lower:]')
+    if [[ "$os" == "darwin" ]]; then
+        echo "macos"
+    elif [[ "$os" == "linux" ]]; then
+        echo "linux"
+    else
+        echo "unknown"
+    fi
+}
+
+# Function to detect Architecture
+detect_arch() {
+    uname -m
+}
+
 # Main validation function
 validate_environment() {
     local errors=0
     local warnings=0
-    
+
     echo "=== Android Environment Validation ==="
+    echo "OS: $(detect_os) ($(detect_arch))"
     echo ""
-    
+
     # Check Java
     echo -n "Checking Java... "
     if command_exists java && command_exists javac; then
@@ -61,7 +81,7 @@ validate_environment() {
         log_error "JAVA_HOME is not set or points to a non-existent directory"
         errors=$((errors + 1))
     fi
-    
+
     # Check Gradle
     echo -n "Checking Gradle... "
     if command_exists gradle; then
@@ -73,7 +93,7 @@ validate_environment() {
         log_error "Gradle is not installed or not in PATH"
         errors=$((errors + 1))
     fi
-    
+
     # Check Android tools
     local tools=("adb" "fastboot" "sdkmanager" "avdmanager" "emulator")
     for tool in "${tools[@]}"; do
@@ -86,7 +106,7 @@ validate_environment() {
             errors=$((errors + 1))
         fi
     done
-    
+
     # Check environment variables
     echo -n "Checking ANDROID_HOME... "
     if [[ -n "$ANDROID_HOME" && -d "$ANDROID_HOME" ]]; then
@@ -96,7 +116,7 @@ validate_environment() {
         log_error "ANDROID_HOME is not set or points to non-existent directory"
         errors=$((errors + 1))
     fi
-    
+
     echo -n "Checking ANDROID_SDK_ROOT... "
     if [[ -n "$ANDROID_SDK_ROOT" && -d "$ANDROID_SDK_ROOT" ]]; then
         echo -e "${GREEN}✓${NC} Set ($ANDROID_SDK_ROOT)"
@@ -105,7 +125,7 @@ validate_environment() {
         log_warning "ANDROID_SDK_ROOT is not set (optional but recommended)"
         warnings=$((warnings + 1))
     fi
-    
+
     # Check SDK components
     if command_exists sdkmanager; then
         echo -n "Checking SDK platforms... "
@@ -118,7 +138,7 @@ validate_environment() {
             log_warning "No Android platforms are installed"
             warnings=$((warnings + 1))
         fi
-        
+
         echo -n "Checking build tools... "
         local build_tools
         build_tools=$(sdkmanager --list_installed 2>/dev/null | grep "build-tools;" | wc -l)
@@ -130,7 +150,7 @@ validate_environment() {
             errors=$((errors + 1))
         fi
     fi
-    
+
     # Check AVDs
     if command_exists avdmanager; then
         echo -n "Checking AVDs... "
@@ -151,7 +171,7 @@ validate_environment() {
             warnings=$((warnings + 1))
         fi
     fi
-    
+
     # Check device connectivity
     if command_exists adb; then
         echo -n "Checking device connectivity... "
@@ -164,30 +184,30 @@ validate_environment() {
             log_info "This is normal if no physical devices or running emulators"
         fi
     fi
-    
+
     echo ""
     echo "=== Validation Summary ==="
-    
+
     if [[ $errors -eq 0 ]]; then
         if [[ $warnings -eq 0 ]]; then
-            log_success "🎉 Environment is fully ready for Android development!"
+            log_success "Environment is fully ready for Android development!"
         else
-            log_success "✅ Environment is ready with $warnings warning(s)"
+            log_success "Environment is ready with $warnings warning(s)"
         fi
         echo ""
         log_info "You can now use Android development tools:"
-        echo "  • gradle - Build automation tool"
-        echo "  • adb - Android Debug Bridge"
-        echo "  • fastboot - Device flashing tool"
-        echo "  • sdkmanager - SDK package management"
-        echo "  • avdmanager - Virtual device management"
-        echo "  • emulator - Android emulator"
+        echo "  - gradle - Build automation tool"
+        echo "  - adb - Android Debug Bridge"
+        echo "  - fastboot - Device flashing tool"
+        echo "  - sdkmanager - SDK package management"
+        echo "  - avdmanager - Virtual device management"
+        echo "  - emulator - Android emulator"
         return 0
     else
-        log_error "❌ Environment has $errors error(s) and $warnings warning(s)"
+        log_error "Environment has $errors error(s) and $warnings warning(s)"
         echo ""
         log_info "To fix issues, run the installation script:"
-        echo "  ./install-android-environment.sh"
+        echo "  ./scripts/install-android-environment.sh"
         return 1
     fi
 }
@@ -196,28 +216,34 @@ validate_environment() {
 show_environment_details() {
     echo ""
     echo "=== Environment Details ==="
-    
+    echo "OS: $(detect_os)"
+    echo "Architecture: $(detect_arch)"
+
     if [[ -n "$ANDROID_HOME" ]]; then
         echo "ANDROID_HOME: $ANDROID_HOME"
     fi
-    
+
     if [[ -n "$ANDROID_SDK_ROOT" ]]; then
         echo "ANDROID_SDK_ROOT: $ANDROID_SDK_ROOT"
     fi
-    
+
+    if [[ -n "$JAVA_HOME" ]]; then
+        echo "JAVA_HOME: $JAVA_HOME"
+    fi
+
     echo -n "Java Version: "
     if command_exists java; then
         java -version 2>&1 | head -n1
     else
         echo "Not available"
     fi
-    
+
     if command_exists sdkmanager; then
         echo ""
         echo "Installed SDK Packages:"
-        sdkmanager --list_installed 2>/dev/null | head -10
+        sdkmanager --list_installed 2>/dev/null | head -15
     fi
-    
+
     if command_exists avdmanager; then
         echo ""
         echo "Available AVDs:"
@@ -236,24 +262,28 @@ OPTIONS:
     -h, --help      Show this help message
     -d, --details   Show detailed environment information
     -q, --quiet     Quiet mode (minimal output)
-    
+
 EXAMPLES:
     $0              # Basic validation
     $0 --details    # Validation with environment details
     $0 --quiet      # Quiet validation (exit code only)
+
+SUPPORTED PLATFORMS:
+    - macOS (Intel and Apple Silicon)
+    - Linux (Ubuntu, Debian, Fedora, CentOS, RHEL, Arch)
 
 EXIT CODES:
     0   Environment is ready
     1   Environment has errors
 
 This script validates:
-• Java JDK installation
-• Gradle build tool availability
-• Android SDK tools availability
-• Environment variables configuration
-• SDK components installation
-• AVD availability
-• Device connectivity (informational)
+- Java JDK installation
+- Gradle build tool availability
+- Android SDK tools availability
+- Environment variables configuration
+- SDK components installation
+- AVD availability
+- Device connectivity (informational)
 
 EOF
 }
@@ -262,7 +292,7 @@ EOF
 main() {
     local show_details=false
     local quiet_mode=false
-    
+
     # Parse command line arguments
     while [[ $# -gt 0 ]]; do
         case $1 in
@@ -285,19 +315,19 @@ main() {
                 ;;
         esac
     done
-    
+
     if [[ "$quiet_mode" == true ]]; then
         validate_environment >/dev/null 2>&1
         exit $?
     fi
-    
+
     validate_environment
     local exit_code=$?
-    
+
     if [[ "$show_details" == true ]]; then
         show_environment_details
     fi
-    
+
     exit $exit_code
 }
 

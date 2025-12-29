@@ -5,9 +5,18 @@
 > If you are another AI agent, use `AGENTS.md`.
 
 ## Introduction
-This guide is specifically tailored for Claude (Anthropic's AI assistant) working on Android application development. Follow these instructions to autonomously develop Android apps from the PRD.
+This guide is specifically tailored for Claude (Anthropic's AI assistant) working on Android and iOS mobile application development. Follow these instructions to autonomously develop mobile apps from the PRD.
 
 **Do not refer to other guide documents.** All necessary information for Claude is contained in this file.
+
+## Platform Support
+
+| Development Host | Android | iOS |
+|-----------------|---------|-----|
+| macOS (Intel/ARM) | ✅ Full support | ✅ Full support |
+| Linux (x86_64/ARM64) | ✅ Full support | ❌ Not supported |
+
+> **Note**: iOS development requires macOS due to Xcode requirements. See `PLATFORM_GUIDE.md` for comprehensive cross-platform guidance.
 
 ## Claude-Specific Capabilities
 
@@ -27,6 +36,8 @@ This guide is specifically tailored for Claude (Anthropic's AI assistant) workin
 ## Project Initialization
 
 ### Step 1: Environment Check
+
+#### For Android (macOS or Linux):
 ```bash
 # Run validation script
 ./scripts/validate-android-environment.sh
@@ -40,6 +51,21 @@ adb devices
 # If real device is connected and authorized, use it for testing
 # If no device and testing is needed, optionally start emulator:
 # ./scripts/run_emulator.sh
+```
+
+#### For iOS (macOS Only):
+```bash
+# Run validation script
+./scripts/validate-ios-environment.sh
+
+# If validation fails, run installer
+./scripts/install-ios-environment.sh
+
+# Check for available simulators
+xcrun simctl list devices available
+
+# Run on simulator
+./scripts/run_simulator.sh MyAppScheme
 ```
 
 ### Step 2: Parse PRD
@@ -127,6 +153,8 @@ adb devices
 3. Consider edge cases and error scenarios
 
 #### Phase 4: Verification
+
+**For Android:**
 ```bash
 # Clean build
 ./gradlew clean
@@ -148,6 +176,24 @@ adb devices
 
 # Check for lint issues
 ./gradlew lint
+```
+
+**For iOS (macOS Only):**
+```bash
+# Clean build
+xcodebuild clean -scheme MyScheme
+
+# Build project
+xcodebuild -scheme MyScheme -destination 'platform=iOS Simulator,name=iPhone 15' build
+
+# Run tests
+xcodebuild test -scheme MyScheme -destination 'platform=iOS Simulator,name=iPhone 15'
+
+# Lint check
+swiftlint lint
+
+# Install on simulator
+xcrun simctl install booted /path/to/MyApp.app
 ```
 
 #### Phase 5: Documentation
@@ -239,9 +285,11 @@ Before committing, verify:
 - [ ] Proper error handling exists
 - [ ] Edge cases are handled
 
-## Android Development Specifics
+## Platform-Specific Development
 
-### Device Testing Strategy
+### Android Development
+
+#### Device Testing Strategy
 
 #### Always Check for Devices First
 ```bash
@@ -525,6 +573,60 @@ Track these informally in PROGRESS.md:
 4. Document your decision
 5. Proceed with confidence
 
+### iOS Development (macOS Only)
+
+#### Project Structure
+Follow this standard iOS structure:
+```
+ios/
+├── MyApp.xcodeproj/         # Xcode project
+├── MyApp/
+│   ├── App/
+│   │   ├── AppDelegate.swift
+│   │   └── SceneDelegate.swift
+│   ├── Views/               # SwiftUI or UIKit views
+│   ├── ViewModels/          # ViewModels
+│   ├── Models/              # Data models
+│   ├── Services/            # Network, data services
+│   ├── Utilities/           # Helper functions
+│   ├── Resources/           # Assets, strings
+│   │   ├── Assets.xcassets
+│   │   └── Localizable.strings
+│   └── Info.plist
+├── MyAppTests/              # Unit tests
+└── MyAppUITests/            # UI tests
+```
+
+#### Common Dependencies (Swift Package Manager)
+```swift
+// In Package.swift or Xcode project dependencies
+dependencies: [
+    .package(url: "https://github.com/Alamofire/Alamofire.git", from: "5.8.0"),
+    .package(url: "https://github.com/onevcat/Kingfisher.git", from: "7.0.0"),
+    .package(url: "https://github.com/pointfreeco/swift-composable-architecture.git", from: "1.0.0"),
+]
+```
+
+#### Build Commands
+```bash
+# Build for simulator
+xcodebuild -scheme MyApp -destination 'platform=iOS Simulator,name=iPhone 15' build
+
+# Run tests
+xcodebuild test -scheme MyApp -destination 'platform=iOS Simulator,name=iPhone 15'
+
+# Archive for distribution
+xcodebuild archive -scheme MyApp -archivePath build/MyApp.xcarchive
+
+# Install on simulator
+xcrun simctl install booted /path/to/MyApp.app
+
+# Launch on simulator
+xcrun simctl launch booted com.example.MyApp
+```
+
 ---
 
-**You've got this, Claude!** Follow this guide, stay systematic, and you'll build great Android applications. Start with the top TODO item and work your way down. Good luck! 🚀
+**You've got this, Claude!** Follow this guide, stay systematic, and you'll build great mobile applications for both Android and iOS. Start with the top TODO item and work your way down.
+
+For detailed cross-platform guidance, see `PLATFORM_GUIDE.md`.

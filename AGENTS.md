@@ -8,12 +8,25 @@
 - **Other AI Agent** → Use this document
 
 ## Overview
-This document provides general instructions for AI agents to autonomously develop Android applications from a Product Requirements Document (PRD). Agent-specific guides (CLAUDE.md, CODEX.md) provide optimized workflows tailored to each agent's capabilities.
+This document provides general instructions for AI agents to autonomously develop Android and iOS applications from a Product Requirements Document (PRD). Agent-specific guides (CLAUDE.md, CODEX.md) provide optimized workflows tailored to each agent's capabilities.
+
+## Platform Support
+
+| Development Host | Android | iOS |
+|-----------------|---------|-----|
+| macOS (Intel/ARM) | ✅ Full support | ✅ Full support |
+| Linux (x86_64/ARM64) | ✅ Full support | ❌ Not supported |
+
+> **Note**: iOS development requires macOS due to Xcode requirements.
+
+For detailed cross-platform development information, see `PLATFORM_GUIDE.md`.
 
 ## Initial Setup
 
 ### 1. Environment Validation
 When starting a new project from this template:
+
+#### For Android Development (macOS or Linux):
 1. Run `./scripts/validate-android-environment.sh` to check Android development environment
 2. If validation fails, run `./scripts/install-android-environment.sh`
 3. Check for connected devices:
@@ -22,6 +35,15 @@ When starting a new project from this template:
    ```
 4. If real device is connected and authorized, use it for testing
 5. If no device available and you need to test, optionally start emulator with `./scripts/run_emulator.sh`
+
+#### For iOS Development (macOS Only):
+1. Run `./scripts/validate-ios-environment.sh` to check iOS development environment
+2. If validation fails, run `./scripts/install-ios-environment.sh`
+3. Check for available simulators:
+   ```bash
+   xcrun simctl list devices available
+   ```
+4. For real device testing, ensure device is registered in Apple Developer account
 
 ### 2. PRD Processing
 1. Read `PRD.md` thoroughly
@@ -82,6 +104,8 @@ Follow this cycle for each task:
 - [ ] Mock external dependencies appropriately
 
 #### Build Verification
+
+**Android:**
 ```bash
 ./gradlew clean build
 ./gradlew test
@@ -94,6 +118,18 @@ adb devices
 
 # Run instrumented tests on connected device
 ./gradlew connectedAndroidTest
+```
+
+**iOS (macOS only):**
+```bash
+# Build for simulator
+xcodebuild -scheme MyScheme -destination 'platform=iOS Simulator,name=iPhone 15' build
+
+# Run unit tests
+xcodebuild test -scheme MyScheme -destination 'platform=iOS Simulator,name=iPhone 15'
+
+# Lint check
+swiftlint lint
 ```
 
 #### Commit Guidelines
@@ -316,9 +352,22 @@ adb -s <device-id> install app/build/outputs/apk/debug/app-debug.apk
 
 ## Getting Started Checklist
 
-- [ ] Validate Android environment
+### Android Development
+- [ ] Validate Android environment: `./scripts/validate-android-environment.sh`
 - [ ] Check for connected devices via `adb devices`
 - [ ] Authorize device if needed
+- [ ] Read PRD.md completely
+- [ ] Create initial TODO.md from PRD
+- [ ] Initialize PROGRESS.md
+- [ ] Initialize BUGS.md
+- [ ] Review ARCHITECTURE.md (if exists)
+- [ ] Set up version control
+- [ ] Begin first TODO item
+
+### iOS Development (macOS Only)
+- [ ] Validate iOS environment: `./scripts/validate-ios-environment.sh`
+- [ ] Check Xcode installation
+- [ ] Check for available simulators: `xcrun simctl list devices`
 - [ ] Read PRD.md completely
 - [ ] Create initial TODO.md from PRD
 - [ ] Initialize PROGRESS.md
@@ -330,3 +379,5 @@ adb -s <device-id> install app/build/outputs/apk/debug/app-debug.apk
 ---
 
 **Remember**: The goal is working software that meets the PRD requirements. Stay focused, test thoroughly, and document as you go.
+
+For detailed cross-platform guidance, see `PLATFORM_GUIDE.md`.
