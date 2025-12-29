@@ -51,7 +51,7 @@ UI Test Runner Script
 Usage: $0 [OPTIONS] [platform]
 
 ARGUMENTS:
-    platform        Target platform: android (default) or ios
+    platform        Target platform: android (default), ios, or catalyst
 
 OPTIONS:
     -h, --help          Show this help message
@@ -64,15 +64,22 @@ OPTIONS:
 
 EXAMPLES:
     $0                              # Run all Android UI tests
-    $0 ios                          # Run all iOS UI tests
+    $0 ios                          # Run all iOS UI tests (simulator)
+    $0 catalyst                     # Run iOS tests via Mac Catalyst
     $0 -a com.example.app android   # Run Android tests for specific app
     $0 -t login_flow.yaml           # Run specific test file
     $0 --list                       # List available tests
+
+PLATFORMS:
+    android     Android device or emulator
+    ios         iOS Simulator
+    catalyst    Mac Catalyst (iOS app running on macOS)
 
 PREREQUISITES:
     - Maestro installed (run ./scripts/install-ui-testing.sh)
     - For Android: Device/emulator connected (adb devices)
     - For iOS: Simulator running (xcrun simctl list devices booted)
+    - For Catalyst: Mac Catalyst app built and running
 
 EOF
     exit 0
@@ -109,7 +116,7 @@ parse_args() {
                 list_tests
                 exit 0
                 ;;
-            android|ios)
+            android|ios|catalyst)
                 PLATFORM="$1"
                 shift
                 ;;
@@ -200,6 +207,24 @@ check_prerequisites() {
                 log_success "iOS simulator running"
             fi
         fi
+    elif [[ "$PLATFORM" == "catalyst" ]]; then
+        if [[ "$(detect_os)" != "macos" ]]; then
+            log_error "Mac Catalyst requires macOS"
+            errors=$((errors + 1))
+        else
+            # Check macOS version (Catalina 10.15+ required)
+            local macos_version
+            macos_version=$(sw_vers -productVersion)
+            local major_version
+            major_version=$(echo "$macos_version" | cut -d. -f1)
+            if [[ "$major_version" -ge 10 ]]; then
+                log_success "Mac Catalyst supported (macOS $macos_version)"
+                log_info "Ensure your Catalyst app is running before tests"
+            else
+                log_error "Mac Catalyst requires macOS 10.15+"
+                errors=$((errors + 1))
+            fi
+        fi
     fi
 
     # Check test directory
@@ -227,6 +252,9 @@ capture_failure_screenshot() {
         adb shell rm /sdcard/failure_screenshot.png 2>/dev/null || true
     elif [[ "$PLATFORM" == "ios" ]]; then
         xcrun simctl io booted screenshot "$screenshot_path" 2>/dev/null || true
+    elif [[ "$PLATFORM" == "catalyst" ]]; then
+        # Use screencapture for Mac Catalyst apps
+        screencapture -x "$screenshot_path" 2>/dev/null || true
     fi
 
     if [[ -f "$screenshot_path" ]]; then

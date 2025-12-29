@@ -4,15 +4,15 @@ This guide covers developing mobile applications for both Android and iOS platfo
 
 ## Platform Support Matrix
 
-| Development Host | Android Development | iOS Development |
-|-----------------|---------------------|-----------------|
-| macOS (Intel)   | ✅ Full support     | ✅ Full support |
-| macOS (Apple Silicon) | ✅ Full support | ✅ Full support |
-| Linux (x86_64)  | ✅ Full support     | ❌ Not supported |
-| Linux (ARM64)   | ✅ Full support     | ❌ Not supported |
-| Windows         | ⚠️ Via WSL2        | ❌ Not supported |
+| Development Host | Android Development | iOS Development | Mac Catalyst |
+|-----------------|---------------------|-----------------|--------------|
+| macOS (Intel)   | ✅ Full support     | ✅ Full support | ✅ Full support |
+| macOS (Apple Silicon) | ✅ Full support | ✅ Full support | ✅ Full support |
+| Linux (x86_64)  | ✅ Full support     | ❌ Not supported | ❌ Not supported |
+| Linux (ARM64)   | ✅ Full support     | ❌ Not supported | ❌ Not supported |
+| Windows         | ⚠️ Via WSL2        | ❌ Not supported | ❌ Not supported |
 
-> **Note**: iOS development requires macOS due to Xcode requirements. Android development works on both macOS and Linux.
+> **Note**: iOS development requires macOS due to Xcode requirements. Android development works on both macOS and Linux. Mac Catalyst allows running iOS apps natively on macOS.
 
 ## Quick Start
 
@@ -242,6 +242,99 @@ xcrun xctrace list devices
 # Build and run on device (requires code signing)
 xcodebuild -scheme MyApp -destination 'platform=iOS,id=DEVICE_ID' build
 ```
+
+## Mac Catalyst Development
+
+Mac Catalyst allows iOS apps to run natively on macOS. This is useful for:
+- **Testing without simulators**: Faster build and run cycle
+- **CI/CD on Mac runners**: No simulator setup required
+- **Development on Mac**: Debug iOS UI directly on your Mac
+
+### Requirements
+
+- macOS 10.15 (Catalina) or later
+- Xcode 11+
+- Project must have Mac Catalyst support enabled
+
+### Enabling Mac Catalyst in Your Project
+
+1. Open your Xcode project
+2. Select your app target
+3. Go to **General** > **Deployment Info**
+4. Check **Mac** (under "Designed for iPad")
+5. Build and run
+
+### Building and Running
+
+```bash
+# Build for Mac Catalyst
+./scripts/run_catalyst.sh MyAppScheme
+
+# Build only (don't launch)
+./scripts/run_catalyst.sh --build-only MyAppScheme
+
+# Run tests via Mac Catalyst
+./scripts/run_catalyst.sh --test MyAppScheme
+
+# Build release version
+./scripts/run_catalyst.sh --configuration Release MyAppScheme
+
+# List available schemes
+./scripts/run_catalyst.sh --list-schemes
+```
+
+### Manual xcodebuild Commands
+
+```bash
+# Build for Mac Catalyst
+xcodebuild -scheme MyApp \
+    -destination 'platform=macOS,variant=Mac Catalyst' \
+    build
+
+# Run tests via Mac Catalyst
+xcodebuild test -scheme MyApp \
+    -destination 'platform=macOS,variant=Mac Catalyst'
+
+# Archive for distribution
+xcodebuild archive -scheme MyApp \
+    -destination 'platform=macOS,variant=Mac Catalyst' \
+    -archivePath build/MyApp-Catalyst.xcarchive
+```
+
+### UI Testing with Mac Catalyst
+
+```bash
+# Run UI tests on Mac Catalyst
+./scripts/run-ui-tests.sh catalyst
+
+# Run specific test
+./scripts/run-ui-tests.sh -t login_flow.yaml catalyst
+```
+
+### Mac Catalyst vs iOS Simulator
+
+| Feature | Mac Catalyst | iOS Simulator |
+|---------|--------------|---------------|
+| Speed | ⚡ Faster | 🐢 Slower |
+| Hardware Access | Native Mac | Simulated iOS |
+| UI Appearance | iPad (resizable) | iPhone/iPad |
+| CI/CD | ✅ Simple | Requires setup |
+| Debugging | Full support | Full support |
+| Screenshots | Native macOS | Simulated |
+
+### Troubleshooting
+
+**"Mac Catalyst not supported"**
+- Enable Mac Catalyst in Xcode project settings
+- Check minimum deployment target (iOS 13+)
+
+**Build fails for Catalyst**
+- Some iOS-only frameworks don't support Catalyst
+- Check for `#if targetEnvironment(macCatalyst)` conditionals
+
+**App doesn't look right**
+- Catalyst uses iPad UI scaled to Mac
+- Consider adding Mac-specific UI adjustments
 
 ## Cross-Platform Strategies
 

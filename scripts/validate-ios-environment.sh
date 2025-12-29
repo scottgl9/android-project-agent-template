@@ -190,6 +190,19 @@ validate_environment() {
         warnings=$((warnings + 1))
     fi
 
+    # Check Mac Catalyst support
+    echo -n "Checking Mac Catalyst... "
+    local macos_version
+    macos_version=$(sw_vers -productVersion)
+    local major_version
+    major_version=$(echo "$macos_version" | cut -d. -f1)
+    if [[ "$major_version" -ge 10 ]]; then
+        echo -e "${GREEN}✓${NC} Supported (macOS $macos_version)"
+    else
+        echo -e "${YELLOW}⚠${NC} Requires macOS 10.15+"
+        warnings=$((warnings + 1))
+    fi
+
     echo ""
     echo "=== Validation Summary ==="
 

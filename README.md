@@ -4,12 +4,12 @@ Project template for AI agents to quickly start building Android and iOS mobile 
 
 ## Platform Support
 
-| Development Host | Android | iOS |
-|-----------------|---------|-----|
-| macOS (Intel/ARM) | ✅ | ✅ |
-| Linux (x86_64/ARM64) | ✅ | ❌ |
+| Development Host | Android | iOS | Mac Catalyst |
+|-----------------|---------|-----|--------------|
+| macOS (Intel/ARM) | ✅ | ✅ | ✅ |
+| Linux (x86_64/ARM64) | ✅ | ❌ | ❌ |
 
-> **Note**: iOS development requires macOS due to Xcode requirements.
+> **Note**: iOS development requires macOS due to Xcode requirements. Mac Catalyst allows running iOS apps natively on macOS for testing.
 
 ## Quick Start
 
@@ -51,6 +51,9 @@ xcrun simctl list devices
 
 # iOS - run on simulator (macOS only)
 ./scripts/run_simulator.sh MyAppScheme
+
+# iOS - run via Mac Catalyst (macOS only, no simulator needed)
+./scripts/run_catalyst.sh MyAppScheme
 ```
 
 ## Project Structure
@@ -119,6 +122,22 @@ xcodebuild test -scheme MyApp     # Run tests
 pod install                       # Install dependencies
 ```
 
+### Mac Catalyst (iOS on Mac)
+
+Run iOS apps natively on macOS without a simulator:
+```bash
+# Build and run via Mac Catalyst
+./scripts/run_catalyst.sh MyAppScheme
+
+# Run tests via Catalyst
+./scripts/run_catalyst.sh --test MyAppScheme
+
+# Run UI tests via Catalyst
+./scripts/run-ui-tests.sh catalyst
+```
+
+Benefits: Faster builds, no simulator overhead, ideal for CI/CD.
+
 ## Documentation
 
 - `PLATFORM_GUIDE.md` - Detailed cross-platform development guide
@@ -138,6 +157,11 @@ pod install                       # Install dependencies
 | `install-ios-environment.sh` | macOS only | Install iOS development tools |
 | `validate-ios-environment.sh` | macOS only | Verify iOS environment |
 | `run_simulator.sh` | macOS only | Build, install, and run on simulator |
+| `run_catalyst.sh` | macOS only | Build and run via Mac Catalyst |
+| `install-ui-testing.sh` | macOS, Linux | Install Maestro UI testing |
+| `run-ui-tests.sh` | macOS, Linux | Run UI tests (android, ios, catalyst) |
+| `autonomous-dev.sh` | macOS, Linux | Run autonomous development mode |
+| `orchestrate.sh` | macOS, Linux | Generate development status report |
 
 ## Getting Started
 
