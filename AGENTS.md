@@ -21,6 +21,53 @@ This document provides general instructions for AI agents to autonomously develo
 
 For detailed cross-platform development information, see `PLATFORM_GUIDE.md`.
 
+## Autonomous Development Mode
+
+When developing autonomously, follow these rules to keep working without prompting.
+
+### Completion Criteria
+
+**DO NOT STOP until ALL criteria are met:**
+
+- [ ] All TODO.md items complete (no `- [ ]` remaining)
+- [ ] Build passes without errors
+- [ ] All unit tests pass
+- [ ] All UI tests pass (`./scripts/run-ui-tests.sh`)
+- [ ] No open bugs in BUGS.md
+- [ ] PROGRESS.md updated with completed work
+- [ ] Changes committed to git
+
+### Autonomous Workflow
+
+1. **Check Status**: Run `./scripts/orchestrate.sh` to generate `CURRENT_STATUS.md`
+2. **Read TODO**: Get top item from TODO.md
+3. **Implement**: Complete the feature/fix entirely
+4. **Build**: `./gradlew build` (Android) or `xcodebuild` (iOS)
+5. **Test**: Run unit tests AND UI tests
+6. **Document**: Update PROGRESS.md
+7. **Commit**: `git add . && git commit -m "[Type] description"`
+8. **Repeat**: Go to step 1 immediately
+
+### Stop Conditions (ONLY these)
+
+- All TODO items complete
+- Blocking ambiguity requiring human input
+- Same error 3+ consecutive times
+- Security-sensitive operation
+
+### Quick Commands
+
+```bash
+# Start autonomous mode
+./scripts/autonomous-dev.sh
+
+# Check current status
+./scripts/orchestrate.sh
+
+# Run all tests
+./gradlew test && ./scripts/run-ui-tests.sh android
+```
+
 ## Initial Setup
 
 ### 1. Environment Validation

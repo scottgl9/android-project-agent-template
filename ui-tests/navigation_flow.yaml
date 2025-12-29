@@ -1,0 +1,39 @@
+# Navigation Flow Test
+# Tests main app navigation between screens
+# This is a template - customize for your app's navigation
+
+appId: com.example.myapp
+---
+- launchApp
+
+# Test main navigation items
+# Adjust these based on your app's navigation structure
+
+# Navigate to first main section
+- tapOn:
+    text: "Home|Dashboard"
+    optional: true
+- assertVisible: ".*"
+- takeScreenshot: nav_home
+
+# Navigate to second section
+- tapOn:
+    text: "Search|Explore|Browse"
+    optional: true
+- assertVisible: ".*"
+- takeScreenshot: nav_search
+
+# Navigate to profile/settings
+- tapOn:
+    text: "Profile|Account|Settings|Me"
+    optional: true
+- assertVisible: ".*"
+- takeScreenshot: nav_profile
+
+# Navigate back to home
+- tapOn:
+    text: "Home|Dashboard"
+    optional: true
+- assertVisible: ".*"
+
+- takeScreenshot: navigation_complete

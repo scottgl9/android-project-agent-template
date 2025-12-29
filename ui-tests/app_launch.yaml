@@ -1,0 +1,14 @@
+# App Launch Test
+# Verifies the app launches successfully and shows the main screen
+# This is a template - update appId for your application
+
+appId: com.example.myapp
+---
+- launchApp:
+    clearState: true
+
+# Verify app launched (should show something on screen)
+- assertVisible: ".*"
+
+# Take screenshot for verification
+- takeScreenshot: app_launch_success

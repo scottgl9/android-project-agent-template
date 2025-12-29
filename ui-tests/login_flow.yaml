@@ -1,0 +1,41 @@
+# Login Flow Test
+# Tests the complete user authentication flow
+# This is a template - customize for your app's login UI
+
+appId: com.example.myapp
+---
+- launchApp:
+    clearState: true
+
+# Wait for login screen to appear
+- assertVisible:
+    text: "Login|Sign In|Welcome"
+    timeout: 5000
+
+# Enter email/username
+- tapOn:
+    text: "Email|Username|User"
+- inputText: "test@example.com"
+- hideKeyboard
+
+# Enter password
+- tapOn:
+    text: "Password"
+- inputText: "TestPassword123!"
+- hideKeyboard
+
+# Tap login button
+- tapOn:
+    text: "Login|Sign In|Submit|Continue"
+
+# Verify successful login - should see main content
+- assertVisible:
+    text: "Home|Dashboard|Welcome|Main"
+    timeout: 10000
+
+- takeScreenshot: login_success
+
+# Optional: Test logout
+# - tapOn: "Menu|Profile|Settings"
+# - tapOn: "Logout|Sign Out"
+# - assertVisible: "Login|Sign In"

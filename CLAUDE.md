@@ -33,6 +33,105 @@ This guide is specifically tailored for Claude (Anthropic's AI assistant) workin
 - Maintain context across the entire development session
 - Proactively identify potential issues
 
+## Autonomous Development Mode
+
+When working autonomously, follow this structured approach to continue working without requiring "keep working" prompts.
+
+### Completion Criteria Checklist
+
+**DO NOT STOP until ALL of these are met:**
+
+- [ ] All TODO.md items are complete (no `- [ ]` remaining)
+- [ ] Build passes without errors
+- [ ] All unit tests pass
+- [ ] All UI tests pass (run `./scripts/run-ui-tests.sh`)
+- [ ] No open bugs in BUGS.md
+- [ ] PROGRESS.md is updated
+- [ ] Changes are committed
+
+### Autonomous Development Loop
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ 1. Check CURRENT_STATUS.md (or run ./scripts/orchestrate.sh) │
+└─────────────────────────────────┬───────────────────────┘
+                                  ↓
+┌─────────────────────────────────────────────────────────┐
+│ 2. Read top TODO item from TODO.md                      │
+└─────────────────────────────────┬───────────────────────┘
+                                  ↓
+┌─────────────────────────────────────────────────────────┐
+│ 3. IMPLEMENT completely (all code, tests, docs)         │
+└─────────────────────────────────┬───────────────────────┘
+                                  ↓
+┌─────────────────────────────────────────────────────────┐
+│ 4. BUILD: ./gradlew build (Android) or xcodebuild (iOS) │
+│    If fails → fix and retry (max 3 attempts)            │
+└─────────────────────────────────┬───────────────────────┘
+                                  ↓
+┌─────────────────────────────────────────────────────────┐
+│ 5. TEST: ./gradlew test && ./scripts/run-ui-tests.sh    │
+│    If fails → fix and retry (max 3 attempts)            │
+└─────────────────────────────────┬───────────────────────┘
+                                  ↓
+┌─────────────────────────────────────────────────────────┐
+│ 6. UPDATE: PROGRESS.md, README.md, ARCHITECTURE.md      │
+└─────────────────────────────────┬───────────────────────┘
+                                  ↓
+┌─────────────────────────────────────────────────────────┐
+│ 7. COMMIT: git add . && git commit -m "[Type] desc"     │
+└─────────────────────────────────┬───────────────────────┘
+                                  ↓
+┌─────────────────────────────────────────────────────────┐
+│ 8. Mark complete in TODO.md → IMMEDIATELY go to step 1  │
+└─────────────────────────────────────────────────────────┘
+```
+
+### When to Stop (and ONLY when)
+
+1. **All TODO items complete** - No `- [ ]` items remaining
+2. **Blocking ambiguity** - PRD is unclear and needs human clarification
+3. **Repeated failures** - Same error 3+ consecutive times
+4. **Security operation** - Needs explicit human approval
+
+### UI Testing Integration
+
+After EVERY successful build, run UI tests:
+
+```bash
+# Generate status check
+./scripts/orchestrate.sh
+
+# Run UI tests
+./scripts/run-ui-tests.sh android   # or ios
+
+# If tests fail, fix and retest before continuing
+```
+
+### Status Tracking
+
+Use these files to track progress:
+
+| File | Purpose | Update When |
+|------|---------|-------------|
+| `TODO.md` | Pending tasks | Add/remove tasks |
+| `PROGRESS.md` | Completed work | After each task |
+| `BUGS.md` | Issues found | When bugs discovered |
+| `CURRENT_STATUS.md` | Auto-generated status | Run orchestrate.sh |
+
+### Quick Commands for Autonomous Mode
+
+```bash
+# Start autonomous development
+./scripts/autonomous-dev.sh
+
+# Generate current status
+./scripts/orchestrate.sh
+
+# Run all tests
+./gradlew test && ./scripts/run-ui-tests.sh android
+```
+
 ## Project Initialization
 
 ### Step 1: Environment Check
